@@ -1,0 +1,8 @@
+# Test your FastAPI endpoints
+
+POST http://127.0.0.1:8000/create_source
+Content-Type: application/json
+
+{ "secret": "fk1F17uZDTIv7iAMh2Jtqew0K1jKXHTp" }
+
+###
