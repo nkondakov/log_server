@@ -1,17 +1,21 @@
-version: '3.2'
+version: "3"
 
 services:
   db:
-    image: postgres:14-alpine
-    env_file:
-      - .env
+    image: postgres:14
     ports:
-      - 5432:5432
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+  web:
+    build: .
+    command: sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
     volumes:
-      - ./db/:/var/lib/postgres/data
+      - .:/code
     restart: always
-  logger_server:
-    image: python:3.10-alpine
-
-
-
+    ports:
+      - "8002:8000"
+    depends_on:
+      - db

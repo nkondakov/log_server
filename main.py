@@ -2,15 +2,14 @@ import asyncio
 import logging
 
 import uvicorn
-from fastapi import FastAPI, Response, Request, Depends
-from pydantic import BaseModel, json
+from fastapi import FastAPI, Response, Request
+from pydantic import BaseModel
 from starlette import status
 from starlette.responses import JSONResponse
 
-from db.db_setup import global_init
-from db.logger_db import Source
+from db.logger_db import Source, Level, Log
+from db.models_management import get_or_create, get, create, create
 from settings.settings import load_config
-
 
 logger = logging.getLogger(__name__)
 app = FastAPI()
@@ -22,32 +21,31 @@ class Secret(BaseModel):
     secret: str
 
 
-class Log(BaseModel):
-    data: str
+class LogRequest(BaseModel):
+    message: str
     token: str
+    level: str
 
 
 @app.post("/source")
 async def get_or_create_source(secret: Secret, request: Request):
     source_url = f"{request.client.host}:{request.client.port}"
     if secret.secret == config.misc.secret:
-        source = await Source.get_or_create({'name': source_url})
-        return JSONResponse(content={"token": str(source.token)}, status_code=status.HTTP_202_ACCEPTED)
+        source = await get_or_create(Source, {'name': source_url}, 'token')
+        return JSONResponse(content={"token": str(source)}, status_code=status.HTTP_202_ACCEPTED)
     else:
         return Response(status_code=status.HTTP_403_FORBIDDEN)
 
 
 @app.post("/log")
-async def store_log(data: Log, request: Request):
-    token = data.token
-    source = await Source.get({"token": token})
-    logger.info(source)
-    print(source.name)
-    return JSONResponse(status_code=status.HTTP_202_ACCEPTED)
+async def store_log(data: LogRequest, request: Request):
+    source = await get(Source, {"token": data.token})
+    level = await get(Level, {"name": data.level.lower()})
+    await create(Log, {"source_id": source.id, "level_id": level.id, "content": data.message})
+    return Response(status_code=status.HTTP_202_ACCEPTED)
 
 
 async def main():
-    global_init(config)
     uvicorn.run(app)
 
 
