@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, String, DateTime, func, BIGINT, ForeignKey, SMALLINT
+from sqlalchemy import Column, String, DateTime, func, BIGINT, ForeignKey, SMALLINT, INTEGER, TIMESTAMP, DATETIME
 from sqlalchemy.dialects.postgresql import UUID, JSON, json
 from sqlalchemy.orm import relationship
 
@@ -44,7 +44,18 @@ class Log(SqlAlchemyBase):
     id: int = Column(BIGINT, primary_key=True)
     source_id: uuid = Column(UUID(as_uuid=True), ForeignKey('public.source.id'), nullable=True)
     source: Source = relationship('Source', back_populates='log')
-    content: json = Column(JSON)
     level_id: int = Column(SMALLINT, ForeignKey('public.level.id'), nullable=False)
     level: Level = relationship('Level', back_populates='log')
-    created_at: datetime = Column(DateTime, nullable=False, server_default=func.now(tz=config.misc.time_zone))
+    file_path: str = Column(String, nullable=True)
+    filename: str = Column(String, nullable=True)
+    module: str = Column(String, nullable=True)
+    logger_name: str = Column(String, nullable=True)
+    function_name: str = Column(String, nullable=True)
+    line_of_code: int = Column(INTEGER, nullable=True)
+    message: str = Column(String, nullable=True)
+    process: str = Column(String, nullable=True)
+    process_name: str = Column(String, nullable=True)
+    exception_info: str = Column(String, nullable=True)
+    exception_text: str = Column(String, nullable=True)
+    created_at: datetime = Column(TIMESTAMP, nullable=True)
+    received_at: datetime = Column(DateTime, nullable=False, server_default=func.now(tz=config.misc.time_zone))

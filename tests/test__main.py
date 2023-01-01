@@ -1,3 +1,4 @@
+import datetime
 import json
 
 import pytest
@@ -30,6 +31,11 @@ def test__create_source__failed(db):
 async def test__log_creation(db):
     response = client.post("/source", json={"secret": config.misc.secret})
     token = json.loads(response.content)
-    data = json.dumps({"test": "this is a test data"})
-    response = client.post("/log", json={"message": data, "token": token['token'], "level": "debug"})
+    data = json.dumps({"token": token, "level": "debug", "message": "Hello", "created": "123456765432",
+                       "exception_info": "", "exception_text": "", "filename": "test__main.py",
+                       "function_name": "test__log_creation", "line_of_code": 36, "module": "test__main",
+                       "logger_name": "main", "path": "tests/test__main.py", "process": "123",
+                       "process_name": "Main"})
+
+    response = client.post("/log", json=data)
     assert response.status_code == 202
