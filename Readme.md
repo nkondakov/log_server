@@ -11,7 +11,7 @@ TIME_ZONE=Europe/Moscow<br>
 SECRET_KEY=thisisaverysecretkey
 
 And run it with:
-docker-compose up --env-file .env up -d
+docker-compose --env-file .env up -d
 
 Default ports are: 8002 for service and 5433 for database<br>
 For client log configuration you can check examples folder
